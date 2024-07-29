@@ -1,0 +1,15 @@
+server:
+  port: "3000"
+
+db:
+  migrations_dir: "migrations"
+  user: "postgres"
+  host: "db"
+  port: "5432"
+  dbname: "postgres"
+  sslmode: "disable"
+
+kafka:
+  topic: "messages"
+  host: "kafka"
+  port: "9092"
