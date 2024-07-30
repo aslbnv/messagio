@@ -3,12 +3,11 @@ package main
 import (
 	"log"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/joho/godotenv"
-	"github.com/spf13/viper"
 	"github.com/aslbnv/messagio/internal/db"
 	"github.com/aslbnv/messagio/internal/kafka"
 	"github.com/aslbnv/messagio/internal/server"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -17,15 +16,10 @@ var (
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatalf("error loading .env file: %s", err)
-	}
-
 	if err := initConfig(); err != nil {
 		log.Fatalf("error initializing configs: %s", err)
 	}
-	
+
 	db, err := db.NewPostgresDB()
 	if err != nil {
 		log.Fatalf("error connecting to database: %s", err)
