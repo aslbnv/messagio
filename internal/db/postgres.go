@@ -22,7 +22,7 @@ type PostgresDB struct {
 func NewPostgresDB() (*PostgresDB, error) {
 	var (
 		user     = viper.GetString("db.user")
-		password = os.Getenv("POSTGRES_PASSWORD")
+		password = os.Getenv("DB_PASSWORD")
 		host     = viper.GetString("db.host")
 		port     = viper.GetString("db.port")
 		sslmode  = viper.GetString("db.sslmode")

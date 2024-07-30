@@ -3,24 +3,23 @@ A simple RESTful API for handling messages on Golang
 
 ## Requirements
 - Docker
-- Docker Compose v2.x.x
+- Docker Compose
 
 ## Run
-Create ```.env``` file in root directory of project with values of **free** ports on your machine and PG password
-```env
-APP_PORT=3000 # free port to run Go app
-DB_PORT=5432 # free port to run Postgres
-KAFKA_PORT=9092 # free port to run Kafka
-
-POSTGRES_PASSWORD=password
-```
-Then
+Just exec:
 ```sh
 make up
 ```
 
-## Structure
+If you want to specify your own free port values for containers, create `.env` file as shown below:
+```env
+APP_PORT=3000
+DB_PORT=5436
+KAFKA_PORT=9092
 ```
+
+## Structure
+```sh
 ├── cmd
 │   └── main.go
 ├── configs
