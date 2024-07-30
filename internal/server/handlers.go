@@ -9,19 +9,42 @@ import (
 )
 
 func (s *Server) handleMessages(w http.ResponseWriter, r *http.Request) error {
-	if r.Method == http.MethodPost {
+	switch r.Method {
+	case http.MethodGet:
+		return s.handleGetMessages(w, r)
+	case http.MethodPost:
 		return s.handleCreateMessage(w, r)
+	default:
+		return fmt.Errorf("method not allowed %s", r.Method)
+	}
+}
+
+func (s *Server) handleMessagesByID(w http.ResponseWriter, r *http.Request) error {
+	switch r.Method {
+	case http.MethodGet:
+		return s.handleGetMessageByID(w, r)
+	case http.MethodDelete:
+		return s.handleDeleteMessageByID(w, r)
+	default:
+		return fmt.Errorf("method not allowed %s", r.Method)
+	}
+}
+
+func (s *Server) handleProcessedMessages(w http.ResponseWriter, r *http.Request) error {
+	if r.Method == http.MethodGet {
+		return s.handleGetProcessedMessages(w, r)
 	}
 
 	return fmt.Errorf("method %s not allowed", r.Method)
 }
 
-func (s *Server) handleProcessedMessages(w http.ResponseWriter, r *http.Request) error {
-	if r.Method == http.MethodGet {
-		return s.GetProcessedMessages(w, r)
+func (s *Server) handleGetMessages(w http.ResponseWriter, _ *http.Request) error {
+	messages, err := s.db.GetMessages()
+	if err != nil {
+		return err
 	}
 
-	return fmt.Errorf("method %s not allowed", r.Method)
+	return writeJSON(w, http.StatusOK, messages)
 }
 
 func (s *Server) handleCreateMessage(w http.ResponseWriter, r *http.Request) error {
@@ -52,7 +75,34 @@ func (s *Server) handleCreateMessage(w http.ResponseWriter, r *http.Request) err
 	return writeJSON(w, http.StatusOK, msg)
 }
 
-func (s *Server) GetProcessedMessages(w http.ResponseWriter, r *http.Request) error {
+func (s *Server) handleGetMessageByID(w http.ResponseWriter, r *http.Request) error {
+	id, err := getID(r)
+	if err != nil {
+		return err
+	}
+
+	msg, err := s.db.GetMessageByID(id)
+	if err != nil {
+		return err
+	}
+
+	return writeJSON(w, http.StatusOK, msg)
+}
+
+func (s *Server) handleDeleteMessageByID(w http.ResponseWriter, r *http.Request) error {
+	id, err := getID(r)
+	if err != nil {
+		return err
+	}
+
+	if err := s.db.DeleteMessageByID(id); err != nil {
+		return err
+	}
+
+	return writeJSON(w, http.StatusOK, map[string]int{"deleted": id})
+}
+
+func (s *Server) handleGetProcessedMessages(w http.ResponseWriter, _ *http.Request) error {
 	processedMessages, err := s.db.GetProcessedMessages()
 	if err != nil {
 		return err

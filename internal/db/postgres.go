@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aslbnv/messagio/internal/types"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
-	"github.com/aslbnv/messagio/internal/types"
 )
 
 type PostgresDB struct {
@@ -60,10 +60,30 @@ func (p *PostgresDB) Init() error {
 	return nil
 }
 
-func (p *PostgresDB) CreateMessage(msg *types.Message) error {
-	query := "INSERT INTO messages (id, text, processed, created_at) VALUES ($1, $2, $3, $4)"
+func (p *PostgresDB) GetMessages() ([]*types.Message, error) {
+	query := "SELECT * FROM messages"
 
-	_, err := p.db.Query(query, msg.ID, msg.Text, msg.Processed, msg.CreatedAt)
+	rows, err := p.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+
+	messages := []*types.Message{}
+	for rows.Next() {
+		msg, err := scanIntoMessage(rows)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, msg)
+	}
+
+	return messages, nil
+}
+
+func (p *PostgresDB) CreateMessage(msg *types.Message) error {
+	query := "INSERT INTO messages (uuid, text, processed, created_at) VALUES ($1, $2, $3, $4)"
+
+	_, err := p.db.Query(query, msg.UUID, msg.Text, msg.Processed, msg.CreatedAt)
 	if err != nil {
 		return err
 	}
@@ -71,10 +91,33 @@ func (p *PostgresDB) CreateMessage(msg *types.Message) error {
 	return nil
 }
 
-func (p *PostgresDB) MarkMessageProcessed(msg *types.Message) error {
-	query := "UPDATE messages SET processed = true WHERE id = $1"
+func (p *PostgresDB) GetMessageByID(id int) (*types.Message, error) {
+	query := "SELECT *FROM messages WHERE id = $1"
 
-	_, err := p.db.Query(query, msg.ID)
+	rows, err := p.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		return scanIntoMessage(rows)
+	}
+
+	return nil, fmt.Errorf("message %d not found", id)
+}
+
+func (p *PostgresDB) DeleteMessageByID(id int) error {
+	query := "DELETE FROM messages WHERE id = $1"
+
+	_, err := p.db.Query(query, id)
+
+	return err
+}
+
+func (p *PostgresDB) MarkMessageProcessed(msg *types.Message) error {
+	query := "UPDATE messages SET processed = true WHERE uuid = $1"
+
+	_, err := p.db.Query(query, msg.UUID)
 	if err != nil {
 		return err
 	}
@@ -110,6 +153,7 @@ func scanIntoMessage(rows *sql.Rows) (*types.Message, error) {
 
 	err := rows.Scan(
 		&msg.ID,
+		&msg.UUID,
 		&msg.Text,
 		&msg.Processed,
 		&msg.CreatedAt,

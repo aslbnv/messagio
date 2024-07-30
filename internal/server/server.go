@@ -27,6 +27,7 @@ func (s *Server) Start() error {
 
 	router.HandleFunc("/messages", makeHandler(s.handleMessages))
 	router.HandleFunc("/messages/processed", makeHandler(s.handleProcessedMessages))
+	router.HandleFunc("/messages/{id}", makeHandler(s.handleMessagesByID))
 
 	return http.ListenAndServe(s.listenAddr, router)
 }

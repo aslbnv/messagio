@@ -44,6 +44,7 @@ KAFKA_PORT=9092
 
 ## API
 #### /messages
+- `GET` : Get all messages
 - `POST` : Create a new message
 ```json
 {
@@ -51,5 +52,9 @@ KAFKA_PORT=9092
 }
 ```
 
+#### /messages/id
+- `GET` : Get selected message
+- `DELETE` : Delete selected message
+
 #### /messages/processed
-- `GET` : Get processed messages
+- `GET` : Get only processed messages

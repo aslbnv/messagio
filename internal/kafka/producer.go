@@ -3,9 +3,9 @@ package kafka
 import (
 	"fmt"
 
+	"github.com/aslbnv/messagio/internal/types"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/spf13/viper"
-	"github.com/aslbnv/messagio/internal/types"
 )
 
 type KafkaProducer struct {
@@ -33,7 +33,7 @@ func NewKafkaProducer() (*KafkaProducer, error) {
 }
 
 func (k *KafkaProducer) ProduceMessage(msg *types.Message) error {
-	msgStr := fmt.Sprintf("[id]: %s [text]: %s [created_at]: %s\n", msg.ID, msg.Text, msg.CreatedAt)
+	msgStr := fmt.Sprintf("[id]: %s [uuid]: %s [text]: %s [created_at]: %s\n", string(msg.ID), msg.UUID, msg.Text, msg.CreatedAt)
 	topic := viper.GetString("kafka.topic")
 
 	return k.producer.Produce(
